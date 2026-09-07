@@ -2,12 +2,14 @@ import os
 import tempfile
 
 from flask import Flask, redirect, render_template, request, url_for
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from services.analytics import build_report
 from services.charts import build_charts
 from services.csv_service import CSVValidationError, load_csv
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
 ALLOWED_MIME_TYPES = {
     "text/csv",
@@ -54,6 +56,16 @@ def index():
         except CSVValidationError as error:
             return render_template("index.html", errors=error.errors), 400
     return render_template("index.html")
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_large_upload(error):
+    message = [
+        {"row": "-", "reason": "Файл слишком большой. Максимальный размер: 5 МБ."}
+    ]
+    if request.path.startswith("/api/"):
+        return {"errors": message}, 413
+    return render_template("index.html", errors=message), 413
 
 
 def api_report():
@@ -105,4 +117,6 @@ def stats():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    port = int(os.getenv("PORT", "5000"))
+    app.run(debug=debug, port=port)
