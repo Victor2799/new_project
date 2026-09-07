@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ расходов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Анализ расходов</h1>
+            <p>Dashboard для анализа финансовых данных</p>
+            <div class="nav"><a href="/" class="btn">Главная</a></div>
+        </div>
+
+        <div class="card">
+            <h2>Загрузите CSV-файл</h2>
+            <form action="/" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
+                <input type="file" name="file" accept=".csv,text/csv" required>
+                <button type="submit" class="btn">Построить отчёт</button>
+            </form>
+            {% if errors %}
+            <div style="margin-top: 20px; color: #991b1b;">
+                <strong>Файл обработан с ошибками:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    {% for error in errors %}<li>Строка {{ error.row }}: {{ error.reason }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <p style="margin-top: 15px; line-height: 1.6;">
+                Отчёт строится на лету. Нужны колонки <strong>Дата</strong>, <strong>Категория</strong> и
+                <strong>Сумма</strong>.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

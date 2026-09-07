@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статистика расходов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .category-list {
+            list-style: none;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-rank {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .category-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .category-amount {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .monthly-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .monthly-item:last-child {
+            border-bottom: none;
+        }
+
+        .month-label {
+            font-weight: 500;
+            width: 100px;
+        }
+
+        .month-amount {
+            font-weight: bold;
+            color: #667eea;
+            width: 120px;
+            text-align: right;
+        }
+
+        .percent-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            width: 120px;
+            text-align: center;
+        }
+
+        .percent-up {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .percent-down {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .percent-equal {
+            background: #e7e7e7;
+            color: #666;
+        }
+
+        .chart {
+            width: 100%;
+            display: block;
+            margin-top: 12px;
+        }
+
+        .warning {
+            background: #fff7ed;
+            color: #9a3412;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Статистика расходов</h1>
+            <a href="/" class="back-link">← Вернуться на главную</a>
+        </div>
+
+        {% if errors %}
+        <div class="warning">
+            <strong>Некоторые строки пропущены:</strong>
+            <ul>{% for error in errors %}<li>Строка {{ error.row }}: {{ error.reason }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">Общая сумма</div>
+                <div class="stat-value">{{ "%.2f"|format(total) }}</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Средний чек</div>
+                <div class="stat-value">{{ "%.2f"|format(average) }}</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Количество записей</div>
+                <div class="stat-value">{{ count }}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">🏆 Топ 3 категории</h2>
+            <ul class="category-list">
+                {% for category, amount in top3.items() %}
+                <li class="category-item">
+                    <span class="category-rank">{{ loop.index }}</span>
+                    <span class="category-name">{{ category }}</span>
+                    <span class="category-amount">{{ "%.2f"|format(amount) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">📈 Анализ по месяцам</h2>
+            <img class="chart" src="data:image/svg+xml;base64,{{ monthly_chart }}" alt="График расходов по месяцам">
+            <div>
+                {% for item in monthly %}
+                <div class="monthly-item">
+                    <span class="month-label"><strong>{{ item.month }}</strong></span>
+                    <span class="month-amount">{{ "%.2f"|format(item.amount) }}</span>
+                    <span
+                        class="percent-badge {% if item.status == '↑' %}percent-up{% elif item.status == '↓' %}percent-down{% else %}percent-equal{% endif %}">
+                        {{ item.status }} {{ "%.1f"|format(item.percent) }}%
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Категории</h2>
+            <img class="chart" src="data:image/svg+xml;base64,{{ category_chart }}" alt="График топ категорий">
+        </div>
+    </div>
+</body>
+
+</html>
