@@ -13,22 +13,30 @@ class CSVValidationError(Exception):
 def load_csv(path):
     try:
         with open(path, "r", encoding="utf-8-sig", newline="") as csv_file:
-            reader = csv.DictReader(csv_file)
+            reader = csv.DictReader(csv_file, strict=True)
             if not reader.fieldnames:
                 raise CSVValidationError([{"row": "-", "reason": "CSV-файл пуст."}])
-            missing_columns = REQUIRED_COLUMNS - set(reader.fieldnames)
-            if missing_columns:
-                missing = ", ".join(sorted(missing_columns))
+            actual_columns = set(reader.fieldnames)
+            missing_columns = REQUIRED_COLUMNS - actual_columns
+            extra_columns = actual_columns - REQUIRED_COLUMNS
+            if missing_columns or extra_columns:
+                reasons = []
+                if missing_columns:
+                    reasons.append(f"отсутствуют: {', '.join(sorted(missing_columns))}")
+                if extra_columns:
+                    reasons.append(f"лишние: {', '.join(sorted(extra_columns))}")
                 raise CSVValidationError(
                     [
                         {
                             "row": "-",
-                            "reason": f"Отсутствуют обязательные колонки: {missing}.",
+                            "reason": "Некорректные колонки CSV ("
+                            + "; ".join(reasons)
+                            + ").",
                         }
                     ]
                 )
             rows = list(reader)
-    except UnicodeDecodeError as error:
+    except (UnicodeDecodeError, csv.Error) as error:
         raise CSVValidationError(
             [
                 {
@@ -58,6 +66,11 @@ def load_csv(path):
             errors.append({"row": row_number, "reason": "Дата имеет неверный формат."})
             row_is_valid = False
             date = None
+        if not row.get("Категория", "").strip():
+            errors.append(
+                {"row": row_number, "reason": "Категория не может быть пустой."}
+            )
+            row_is_valid = False
         if not row_is_valid:
             continue
         valid_rows.append(
